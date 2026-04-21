@@ -4,6 +4,39 @@ import pandas as pd
 
 df = pd.read_excel("RERA_Mar.xlsx")
 
+async def project_address(pg):
+    await pg.wait_for_timeout(2000)
+    cell1 = await pg.locator("//label[text()='Address']").count()
+    if cell1 != 0:
+        address = (await pg.locator("//label[text()='Address']/following-sibling::div/div").inner_text()).strip()
+
+    cell2 = await pg.locator("//label[text()='Street Name']").count()
+    if cell2 != 0:
+        street = (await pg.locator("//label[text()='Street Name']/following-sibling::div/div").inner_text()).strip()
+
+    cell3 = await pg.locator("//label[text()='Locality']").count()
+    if cell3 != 0:
+        locality = (await pg.locator("//label[text()='Locality']/following-sibling::div/div").inner_text()).strip()
+
+    cell4 = await pg.locator("//label[text()=' Taluka ']").count()
+    if cell4 != 0:
+        taluka = (await pg.locator("//label[text()=' Taluka ']/following-sibling::div/div").first.inner_text()).strip()
+
+    cell5 = await pg.locator("//label[text()=' Village ']").count()
+    if cell5 != 0:
+        village = (await pg.locator("//label[text()=' Village ']/following-sibling::div/div").first.inner_text()).strip()
+
+    cell6 = await pg.locator("//label[text()=' District ']").count()
+    if cell6 != 0:
+        district = (await pg.locator("//label[text()=' District ']/following-sibling::div/div").first.inner_text()).strip()
+
+    cell7 = await pg.locator("//label[text()=' Pin Code ']").count()
+    if cell7 != 0:
+        pin_code = (await pg.locator("//label[text()=' Pin Code ']/following-sibling::div/div").first.inner_text()).strip()
+    
+    add = f"{address}, {street}, {locality}, taluka-{taluka}, village-{village}, district-{district} {pin_code}"
+    return add
+
 async def total_apartments(pg):
     await pg.wait_for_timeout(2000)
     cells = await pg.locator("//th[text()='Total']").count()
@@ -21,13 +54,15 @@ async def fetch_data(page, context):
     
     new_page = await new_page_info.value
     await new_page.wait_for_load_state("domcontentloaded")
-    print(new_page.url)
     date = (await new_page.locator("//label[text()='Date of Registration']/following-sibling::label[1]").inner_text()).strip()
     type = (await new_page.locator("//div[text()=' Project Type ']/following-sibling::div[1]").inner_text()).strip()
+    apartment = await total_apartments(new_page)
+    add = await project_address(new_page)
+    print(new_page.url)
     print(date)
     print(type)
-    apartment = await total_apartments(new_page)
     print("no: ", apartment)
+    print(f"Address: {add}")
 
 async def main():
     async with async_playwright() as p:
