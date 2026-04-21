@@ -2,6 +2,8 @@ from playwright.async_api import async_playwright
 import asyncio
 import pandas as pd
 
+projects = []
+
 df = pd.read_excel("RERA_Mar.xlsx")
 
 async def project_address(pg):
@@ -100,12 +102,7 @@ async def fetch_data(page, context):
     apartment = await total_apartments(new_page)
     add = await project_address(new_page)
     promoter = await promoter_address(new_page)
-    print(new_page.url)
-    print(date)
-    print(type)
-    print("no: ", apartment)
-    print(f"Address: {add}")
-    print(f"Promoter Address: {promoter}")
+    return date, type, apartment, add, promoter
 
 async def main():
     async with async_playwright() as p:
@@ -131,8 +128,26 @@ async def main():
             if command == "next":
                 continue
             elif command == "fetch":
-                await fetch_data(page, context)
+                date, type, unit, add, promoter = await fetch_data(page, context)
+                projects.append({
+                        "PROJECT NAME": row["PROJECT NAME"],
+                        "LOCATION": add,
+                        "REGISTRATION DATE": date,
+                        "RERA NUMBER": row["RERA NUMBER"],
+                        "PROMOTER NAME": row["PROMOTER NAME"],
+                        "COMPLETION DATE": "31-12-2026",
+                        "PROJECT TYPE": type,
+                        "UNITS": unit,
+                        "ADDRESS": promoter
+                })
+                print("Succesfully appended list!")
+            else:
+                break
 
         await browser.close()
 
 asyncio.run(main())
+
+df = pd.DataFrame(projects)
+df.to_excel("RERA.xlsx", index=False)
+print("saved excel file!")
