@@ -24,6 +24,7 @@ async def main():
         await page.wait_for_load_state("load")
         await page.locator("select#edit-project-district.form-select").select_option(value='521')
         await page.locator("input#edit-submit--2.btn-default.me-2.button.js-form-submit.form-submit").click()
+        await page.wait_for_timeout(10000)
 
         n = 1
         while True:
@@ -59,4 +60,4 @@ async def main():
 asyncio.run(main())
 
 df = pd.DataFrame(projects)
-df.to_excel("Private_Projects.xlsx", index=False)
+df.to_excel("Rera_Dec.xlsx", index=False)
